@@ -56,14 +56,14 @@ class _BookIntroScreenState extends State<BookIntroScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.purple[900]!,
-              Colors.deepPurple[700]!,
-              Colors.orange[800]!,
+              Color(0xFF6366F1), // Indigo-500
+              Color(0xFF8B5CF6), // Violet-500
+              Color(0xFF7C3AED), // Violet-600
             ],
           ),
         ),
@@ -173,16 +173,20 @@ class _BookIntroScreenState extends State<BookIntroScreen>
                 width: 300,
                 height: 440,
                 decoration: BoxDecoration(
-                  gradient: LinearGradient(
+                  gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      const Color(0xFF3E2723),
-                      const Color(0xFF2C1810),
-                      const Color(0xFF1A0F08),
+                      Color(0xFF1F2937), // Dark gray
+                      Color(0xFF111827), // Darker gray
+                      Color(0xFF0F172A), // Darkest
                     ],
                   ),
-                  borderRadius: BorderRadius.circular(4),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: const Color(0xFFF59E0B), // Amber gold border
+                    width: 3,
+                  ),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.6),
@@ -271,6 +275,72 @@ class _BookIntroScreenState extends State<BookIntroScreen>
                         ),
                       ),
                     ),
+                    // Logo in circular shape - top left
+                    Positioned(
+                      top: 20,
+                      left: 20,
+                      child: Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFFFBBF24), // Amber border
+                            width: 2.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: Padding(
+                            padding: const EdgeInsets.all(6),
+                            child: Image.asset(
+                              'assets/sdplogo-removebg-preview.png',
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Logo in circular shape - top right (Mile High AI Labs)
+                    Positioned(
+                      top: 20,
+                      right: 20,
+                      child: Container(
+                        width: 60,
+                        height: 60,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1E3A8A), // Navy blue background
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: const Color(0xFFFBBF24), // Amber border
+                            width: 2.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 8,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: ClipOval(
+                          child: Padding(
+                            padding: const EdgeInsets.all(6),
+                            child: Image.asset(
+                              'assets/Screenshot 2025-07-08 135823.png',
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
                     // Cover content
                     Center(
                       child: Padding(
@@ -283,46 +353,50 @@ class _BookIntroScreenState extends State<BookIntroScreen>
                             const Text(
                               'ॐ',
                               style: TextStyle(
-                                fontSize: 40,
-                                color: Color(0xFFD4AF37),
+                                fontSize: 48,
+                                color: Color(0xFFFBBF24), // Bright amber
                                 fontWeight: FontWeight.w300,
                                 shadows: [
                                   Shadow(
                                     color: Colors.black45,
-                                    offset: Offset(3, 3),
-                                    blurRadius: 10,
+                                    offset: Offset(2, 2),
+                                    blurRadius: 8,
                                   ),
                                 ],
                               ),
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 12),
                             // Main title
                             const Text(
-                              'Adhi Shankara Charya\nVerses',
+                              'Bhaja Govindam',
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w400,
-                                color: Color(0xFFD4AF37),
-                                letterSpacing: 2,
-                                height: 1.4,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black87,
-                                    offset: Offset(2, 2),
-                                    blurRadius: 6,
-                                  ),
-                                ],
+                                fontSize: 24,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFFFBBF24), // Bright amber
+                                letterSpacing: 1.5,
+                                height: 1.3,
                               ),
                             ),
-                            const SizedBox(height: 15),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Adi Shankaracharya',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w400,
+                                color: Color(0xFFD1D5DB), // Light gray
+                                letterSpacing: 1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
                               Container(
-                              height: 200,
+                              height: 180,
                               decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                              color: const Color(0xFFD4AF37),
-                              width: 2,
+                              color: const Color(0xFFF59E0B), // Amber
+                              width: 2.5,
                               ),
                               boxShadow: [
                               BoxShadow(

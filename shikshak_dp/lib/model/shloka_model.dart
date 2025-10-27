@@ -4,6 +4,7 @@ class Shloka {
   final String transliteration;
   final String wordToWordMeaning;
   final String commentary;
+  final String? audioUrl; // Optional YouTube video ID for audio playback
 
   Shloka({
     required this.shlokaNo,
@@ -11,6 +12,7 @@ class Shloka {
     required this.transliteration,
     required this.wordToWordMeaning,
     required this.commentary,
+    this.audioUrl,
   });
 
   // This factory constructor creates a Shloka from JSON
@@ -22,6 +24,7 @@ class Shloka {
       transliteration: json[' Transliteration'],
       wordToWordMeaning: json['Word-to-Word Meaning'],
       commentary: json['Commentary'],
+      audioUrl: json['Audio URL'], // Optional field
     );
   }
 }

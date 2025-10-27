@@ -13,6 +13,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    - Animated landing screen with 3D book-opening animation
    - User taps the book to trigger a flip animation (1500ms duration)
    - Uses `AnimationController` and `Matrix4` transformations for 3D effects
+   - Book cover features Shankaracharya portrait, Om symbol, and organization logos
    - Transitions to main shloka list after animation completes
 
 2. **Main List Screen** (`lib/main.dart` - `BhajaGovindamHomePage`):
@@ -38,6 +39,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Data Layer
 - **Model**: `lib/model/shloka_model.dart` - Simple data class with `fromJson()` factory
+  - Required fields: `shlokaNo`, `devanagari`, `transliteration`, `wordToWordMeaning`, `commentary`
+  - Optional field: `audioUrl` (YouTube video ID for audio playback)
 - **Data Source**: JSON asset loaded via `rootBundle.loadString()`
 - **Parsing**: Direct JSON deserialization using `Shloka.fromJson()`
 - **No persistence**: Data exists only in memory during runtime
@@ -108,7 +111,10 @@ lib/
     └── shloka_model.dart          # Data model with JSON parsing
 
 assets/
-└── bhaja_govindam.json            # 33 shlokas data
+├── bhaja_govindam.json                        # 33 shlokas data
+├── shankaracharya.png                         # Book cover portrait image
+├── sdplogo-removebg-preview.png               # SDP organization logo
+└── Screenshot 2025-07-08 135823.png           # Mile High AI Labs logo
 
 test/
 └── widget_test.dart               # Widget tests (needs updating)
@@ -124,14 +130,16 @@ The `assets/bhaja_govindam.json` file contains exactly 33 objects with this stru
   "Devanagari": "भज गोविन्दं भज गोविन्दं...",
   " Transliteration": "bhaja govindaṃ bhaja govindaṃ...",
   "Word-to-Word Meaning": "भज (bhaja) – worship...",
-  "Commentary": "This verse presents..."
+  "Commentary": "This verse presents...",
+  "Audio URL": "rEWdZNM1vIU"
 }
 ```
 
 **CRITICAL PARSING DETAIL**:
-- The `" Transliteration"` key has a **leading space** - this is intentional and handled in `shloka_model.dart:22`
+- The `" Transliteration"` key has a **leading space** - this is intentional and handled in `shloka_model.dart:24`
 - If you edit the JSON, preserve this space or the app will crash with a null parsing error
-- All five fields are required for each shloka
+- The first five fields are required for each shloka
+- `"Audio URL"` is optional and contains a YouTube video ID for audio playback integration
 
 **Text Formatting Logic**:
 - **Devanagari**: Line breaks at `।` (danda), removes `॥` (double danda)
@@ -143,6 +151,7 @@ The `assets/bhaja_govindam.json` file contains exactly 33 objects with this stru
 **Production**:
 - `flutter` (SDK)
 - `cupertino_icons: ^1.0.8`
+- `youtube_player_flutter: ^9.0.3` - YouTube video player integration
 
 **Dev**:
 - `flutter_test` (SDK)
@@ -158,6 +167,7 @@ The `assets/bhaja_govindam.json` file contains exactly 33 objects with this stru
 - **Opacity**: Fades cover from 1 to 0 during flip
 - **Scale**: Book grows by 30% during animation
 - **Callback**: Calls `onBookOpened()` 300ms after completion
+- **Book Cover Design**: Features Om symbol, title, author name, Shankaracharya portrait, and organization logos (SDP and Mile High AI Labs)
 
 ### Flip Card Animation
 - **Builder**: `TweenAnimationBuilder<double>` with 600ms duration

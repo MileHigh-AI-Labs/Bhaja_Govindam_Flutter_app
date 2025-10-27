@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'model/shloka_model.dart'; // Ensure this path is correct
 
 // Enum to manage which content is currently selected
@@ -15,6 +16,36 @@ class ShlokaDetailScreen extends StatefulWidget {
 
 class _ShlokaDetailScreenState extends State<ShlokaDetailScreen> {
   ContentType? _flippedCard;
+
+  Future<void> _launchYouTube() async {
+    if (widget.shloka.audioUrl == null || widget.shloka.audioUrl!.isEmpty) {
+      return;
+    }
+
+    final url = Uri.parse('https://www.youtube.com/watch?v=${widget.shloka.audioUrl}');
+
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(
+          url,
+          mode: LaunchMode.externalApplication, // Opens in YouTube app or browser
+        );
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Could not open YouTube')),
+          );
+        }
+      }
+    } catch (e) {
+      print('Error launching YouTube: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+  }
 
   void _toggleCard(ContentType type) {
     setState(() {
@@ -78,14 +109,14 @@ class _ShlokaDetailScreenState extends State<ShlokaDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.purple[700]!,
-              Colors.deepPurple[400]!,
-              Colors.orange[300]!,
+              Color(0xFF6366F1), // Indigo-500
+              Color(0xFF8B5CF6), // Violet-500
+              Color(0xFF7C3AED), // Violet-600
             ],
           ),
         ),
@@ -125,10 +156,10 @@ class _ShlokaDetailScreenState extends State<ShlokaDetailScreen> {
               Expanded(
                 child: Container(
                   decoration: const BoxDecoration(
-                    color: Colors.white,
+                    color: Color(0xFFFCFBF8), // Warm off-white
                     borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
+                      topLeft: Radius.circular(32),
+                      topRight: Radius.circular(32),
                     ),
                   ),
                   child: SingleChildScrollView(
@@ -136,6 +167,79 @@ class _ShlokaDetailScreenState extends State<ShlokaDetailScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        // Listen on YouTube Button
+                        if (widget.shloka.audioUrl != null && widget.shloka.audioUrl!.isNotEmpty) ...[
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              const Row(
+                                children: [
+                                  Icon(
+                                    Icons.music_note,
+                                    color: Color(0xFF6366F1),
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'Listen to this Shloka',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF3E2723),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  onTap: _launchYouTube,
+                                  borderRadius: BorderRadius.circular(16),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      borderRadius: BorderRadius.circular(16),
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: const Color(0xFF6366F1).withOpacity(0.3),
+                                          spreadRadius: 2,
+                                          blurRadius: 8,
+                                          offset: const Offset(0, 4),
+                                        ),
+                                      ],
+                                    ),
+                                    child: const Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.play_circle_filled,
+                                          color: Colors.white,
+                                          size: 32,
+                                        ),
+                                        SizedBox(width: 12),
+                                        Text(
+                                          'Listen on YouTube',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 20),
+                        ],
                         // Flip Cards
                         _buildFlipCard(
                           'Devanagari',

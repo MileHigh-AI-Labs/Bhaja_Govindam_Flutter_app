@@ -25,6 +25,12 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  void _onBackToIntro() {
+    setState(() {
+      _showBookIntro = true;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -35,60 +41,81 @@ class _MyAppState extends State<MyApp> {
       ),
       home: _showBookIntro
           ? BookIntroScreen(onBookOpened: _onBookOpened)
-          : const BhajaGovindamHomePage(),
+          : BhajaGovindamHomePage(onBackToIntro: _onBackToIntro),
     );
   }
 }
 
 class BhajaGovindamHomePage extends StatelessWidget {
-  const BhajaGovindamHomePage({super.key});
+  final VoidCallback onBackToIntro;
+
+  const BhajaGovindamHomePage({super.key, required this.onBackToIntro});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: BoxDecoration(
+        decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
             colors: [
-              Colors.purple[700]!,
-              Colors.deepPurple[400]!,
-              Colors.orange[300]!,
+              Color(0xFF6366F1), // Indigo-500
+              Color(0xFF8B5CF6), // Violet-500
+              Color(0xFF7C3AED), // Violet-600
             ],
           ),
         ),
         child: SafeArea(
           child: Column(
             children: [
-              // Custom AppBar
-              Padding(
+              // Modern AppBar
+              Container(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Icon(
-                      Icons.auto_stories,
-                      size: 50,
-                      color: Colors.white,
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Bhaja Govindam',
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                        letterSpacing: 1.2,
+                    // Back button
+                    Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.arrow_back_ios_new,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        onPressed: onBackToIntro,
+                        tooltip: 'Back',
                       ),
                     ),
-                    const SizedBox(height: 5),
-                    Text(
-                      'Adi Shankaracharya',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white.withOpacity(0.9),
-                        fontStyle: FontStyle.italic,
-                      ),
+                    const SizedBox(height: 20),
+                    // Title section
+                    const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'ॐ Bhaja Govindam',
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Adi Shankaracharya • 33 Sacred Verses',
+                          style: TextStyle(
+                            fontSize: 16,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -96,20 +123,27 @@ class BhajaGovindamHomePage extends StatelessWidget {
               // Shloka List
               Expanded(
                 child: Container(
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(30),
-                      topRight: Radius.circular(30),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFCFBF8), // Warm off-white
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(32),
+                      topRight: Radius.circular(32),
                     ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.1),
+                        blurRadius: 20,
+                        offset: const Offset(0, -5),
+                      ),
+                    ],
                   ),
                   child: FutureBuilder<List<Shloka>>(
                     future: loadShlokas(),
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
-                        return Center(
+                        return const Center(
                           child: CircularProgressIndicator(
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.purple[700]!),
+                            valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFF6F00)),
                           ),
                         );
                       } else if (snapshot.hasError) {
@@ -162,16 +196,6 @@ class ShlokaCard extends StatelessWidget {
 
   const ShlokaCard({super.key, required this.shloka, required this.index});
 
-  Color _getGradientColor1(int index) {
-    final colors = [Colors.purple[400]!, Colors.orange[400]!, Colors.amber[400]!];
-    return colors[index % 3];
-  }
-
-  Color _getGradientColor2(int index) {
-    final colors = [Colors.deepPurple[600]!, Colors.deepOrange[600]!, Colors.orange[600]!];
-    return colors[index % 3];
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -180,7 +204,7 @@ class ShlokaCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         color: const Color(0xFFE8DCC4), // Aged palm leaf beige
         border: Border.all(
-          color: const Color(0xFFB8945F),
+          color: const Color(0xFFD4AF37), // Golden border
           width: 2,
         ),
         boxShadow: [
@@ -317,6 +341,101 @@ class ShlokaCard extends StatelessWidget {
       ),
     );
   }
+}
+
+// Enum for corner positions
+enum Corner { topLeft, topRight, bottomLeft, bottomRight }
+
+// Temple-style corner ornament painter
+class TempleCornerPainter extends CustomPainter {
+  final Corner corner;
+
+  TempleCornerPainter({required this.corner});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = const Color(0xFFD4AF37) // Golden color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round;
+
+    final fillPaint = Paint()
+      ..color = const Color(0xFFFF6F00).withOpacity(0.2) // Saffron fill
+      ..style = PaintingStyle.fill;
+
+    // Determine positioning based on corner
+    bool isTop = corner == Corner.topLeft || corner == Corner.topRight;
+    bool isLeft = corner == Corner.topLeft || corner == Corner.bottomLeft;
+
+    double xMultiplier = isLeft ? 1 : -1;
+    double yMultiplier = isTop ? 1 : -1;
+    double startX = isLeft ? 10 : size.width - 10;
+    double startY = isTop ? 10 : size.height - 10;
+
+    // Draw lotus petal-inspired design
+    final path = Path();
+
+    // Center petal
+    path.moveTo(startX, startY);
+    path.quadraticBezierTo(
+      startX + (15 * xMultiplier),
+      startY + (8 * yMultiplier),
+      startX + (25 * xMultiplier),
+      startY + (15 * yMultiplier),
+    );
+    path.quadraticBezierTo(
+      startX + (15 * xMultiplier),
+      startY + (20 * yMultiplier),
+      startX,
+      startY + (25 * yMultiplier),
+    );
+
+    // Side petal
+    path.moveTo(startX, startY);
+    path.quadraticBezierTo(
+      startX + (8 * xMultiplier),
+      startY + (15 * yMultiplier),
+      startX + (15 * xMultiplier),
+      startY + (25 * yMultiplier),
+    );
+    path.quadraticBezierTo(
+      startX + (20 * xMultiplier),
+      startY + (15 * yMultiplier),
+      startX + (25 * xMultiplier),
+      startY,
+    );
+
+    // Inner decorative circle (om/bindu symbol)
+    canvas.drawCircle(
+      Offset(startX + (12 * xMultiplier), startY + (12 * yMultiplier)),
+      4,
+      fillPaint,
+    );
+    canvas.drawCircle(
+      Offset(startX + (12 * xMultiplier), startY + (12 * yMultiplier)),
+      4,
+      paint,
+    );
+
+    // Draw the lotus petals
+    canvas.drawPath(path, paint);
+
+    // Additional decorative dots
+    for (int i = 0; i < 3; i++) {
+      canvas.drawCircle(
+        Offset(
+          startX + ((20 + i * 5) * xMultiplier),
+          startY + ((20 + i * 5) * yMultiplier),
+        ),
+        1.5,
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 Future<List<Shloka>> loadShlokas() async {

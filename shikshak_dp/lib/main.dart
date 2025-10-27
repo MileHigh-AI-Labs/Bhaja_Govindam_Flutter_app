@@ -277,50 +277,40 @@ class ShlokaCard extends StatelessWidget {
                 );
               },
               child: Padding(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
                 child: Row(
                   children: [
-                    Container(
-                      width: 60,
-                      height: 60,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFB8945F).withOpacity(0.3),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: const Color(0xFF8B6F47),
-                          width: 1.5,
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${index + 1}',
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF3E2723),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            shloka.shlokaNo,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF3E2723),
-                            ),
+                          Row(
+                            children: [
+                              Text(
+                                '${index + 1}.',
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF8B6F47),
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                shloka.shlokaNo,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF3E2723),
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 6),
                           Text(
                             'Tap to read more',
                             style: TextStyle(
                               fontSize: 14,
-                              color: const Color(0xFF5D4037).withOpacity(0.9),
+                              color: const Color(0xFF5D4037).withOpacity(0.8),
                               fontStyle: FontStyle.italic,
                             ),
                           ),
@@ -329,8 +319,8 @@ class ShlokaCard extends StatelessWidget {
                     ),
                     const Icon(
                       Icons.arrow_forward_ios,
-                      color: Color(0xFF5D4037),
-                      size: 20,
+                      color: Color(0xFF8B6F47),
+                      size: 18,
                     ),
                   ],
                 ),

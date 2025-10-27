@@ -67,70 +67,77 @@ class _BookIntroScreenState extends State<BookIntroScreen>
             ],
           ),
         ),
-        child: Center(
-          child: AnimatedBuilder(
-            animation: _openAnimation,
-            builder: (context, child) {
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Title above book
-                  Opacity(
-                    opacity: 1 - _openAnimation.value,
+        child: SafeArea(
+          child: Center(
+            child: AnimatedBuilder(
+              animation: _openAnimation,
+              builder: (context, child) {
+                return SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 20),
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Text(
-                          'Adhi Shankara Charya',
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 2,
+                        // Title above book
+                        Opacity(
+                          opacity: 1 - _openAnimation.value,
+                          child: Column(
+                            children: [
+                              const Text(
+                                'Adhi Shankara Charya',
+                                style: TextStyle(
+                                  fontSize: 28,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                  letterSpacing: 2,
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              Text(
+                                'Bhaja Govindam',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white.withOpacity(0.9),
+                                  fontStyle: FontStyle.italic,
+                                ),
+                              ),
+                              const SizedBox(height: 30),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Bhaja Govindam',
-                          style: TextStyle(
-                            fontSize: 20,
-                            color: Colors.white.withOpacity(0.9),
-                            fontStyle: FontStyle.italic,
+                        // Book
+                        GestureDetector(
+                          onTap: _openBook,
+                          child: _buildBook(),
+                        ),
+                        // Tap instruction
+                        const SizedBox(height: 30),
+                        Opacity(
+                          opacity: 1 - _openAnimation.value,
+                          child: Column(
+                            children: [
+                              Icon(
+                                Icons.touch_app,
+                                color: Colors.white.withOpacity(0.8),
+                                size: 36,
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                'Tap on the book to open',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.white.withOpacity(0.9),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 50),
                       ],
                     ),
                   ),
-                  // Book
-                  GestureDetector(
-                    onTap: _openBook,
-                    child: _buildBook(),
-                  ),
-                  // Tap instruction
-                  const SizedBox(height: 50),
-                  Opacity(
-                    opacity: 1 - _openAnimation.value,
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.touch_app,
-                          color: Colors.white.withOpacity(0.8),
-                          size: 40,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Tap on the book to open',
-                          style: TextStyle(
-                            fontSize: 16,
-                            color: Colors.white.withOpacity(0.9),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -139,7 +146,7 @@ class _BookIntroScreenState extends State<BookIntroScreen>
 
   Widget _buildBook() {
     return Transform.scale(
-      scale: 1 + (_openAnimation.value * 0.3),
+      scale: 1 + (_openAnimation.value * 0.2),
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -147,7 +154,7 @@ class _BookIntroScreenState extends State<BookIntroScreen>
           Positioned(
             bottom: -30,
             child: Container(
-              width: 300,
+              width: 280,
               height: 40,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(200),
@@ -170,8 +177,8 @@ class _BookIntroScreenState extends State<BookIntroScreen>
             child: Opacity(
               opacity: 1 - (_openAnimation.value * 1.5).clamp(0.0, 1.0),
               child: Container(
-                width: 300,
-                height: 440,
+                width: 280,
+                height: 400,
                 decoration: BoxDecoration(
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
@@ -389,9 +396,9 @@ class _BookIntroScreenState extends State<BookIntroScreen>
                                 letterSpacing: 1.2,
                               ),
                             ),
-                            const SizedBox(height: 20),
+                            const SizedBox(height: 16),
                               Container(
-                              height: 180,
+                              height: 160,
                               decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(

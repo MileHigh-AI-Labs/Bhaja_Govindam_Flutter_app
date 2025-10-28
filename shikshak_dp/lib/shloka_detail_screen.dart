@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import 'model/shloka_model.dart'; // Ensure this path is correct
 
 // Enum to manage which content is currently selected
@@ -7,8 +7,13 @@ enum ContentType { devanagari, transliteration, wordMeaning, commentary, none }
 
 class ShlokaDetailScreen extends StatefulWidget {
   final Shloka shloka;
+  final List<Color> gradientColors;
 
-  const ShlokaDetailScreen({super.key, required this.shloka});
+  const ShlokaDetailScreen({
+    super.key,
+    required this.shloka,
+    required this.gradientColors,
+  });
 
   @override
   State<ShlokaDetailScreen> createState() => _ShlokaDetailScreenState();
@@ -16,35 +21,36 @@ class ShlokaDetailScreen extends StatefulWidget {
 
 class _ShlokaDetailScreenState extends State<ShlokaDetailScreen> {
   ContentType? _flippedCard;
+  YoutubePlayerController? _youtubeController;
+  bool _showPlayer = false;
 
-  Future<void> _launchYouTube() async {
-    if (widget.shloka.audioUrl == null || widget.shloka.audioUrl!.isEmpty) {
-      return;
+  @override
+  void initState() {
+    super.initState();
+    if (widget.shloka.audioUrl != null && widget.shloka.audioUrl!.isNotEmpty) {
+      _youtubeController = YoutubePlayerController.fromVideoId(
+        videoId: widget.shloka.audioUrl!,
+        autoPlay: false,
+        params: const YoutubePlayerParams(
+          showControls: true,
+          showFullscreenButton: true,
+          mute: false,
+          loop: false,
+        ),
+      );
     }
+  }
 
-    final url = Uri.parse('https://www.youtube.com/watch?v=${widget.shloka.audioUrl}');
+  @override
+  void dispose() {
+    _youtubeController?.close();
+    super.dispose();
+  }
 
-    try {
-      if (await canLaunchUrl(url)) {
-        await launchUrl(
-          url,
-          mode: LaunchMode.externalApplication, // Opens in YouTube app or browser
-        );
-      } else {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Could not open YouTube')),
-          );
-        }
-      }
-    } catch (e) {
-      print('Error launching YouTube: $e');
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e')),
-        );
-      }
-    }
+  void _togglePlayer() {
+    setState(() {
+      _showPlayer = !_showPlayer;
+    });
   }
 
   void _toggleCard(ContentType type) {
@@ -109,15 +115,11 @@ class _ShlokaDetailScreenState extends State<ShlokaDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF6366F1), // Indigo-500
-              Color(0xFF8B5CF6), // Violet-500
-              Color(0xFF7C3AED), // Violet-600
-            ],
+            colors: widget.gradientColors,
           ),
         ),
         child: SafeArea(
@@ -172,70 +174,91 @@ class _ShlokaDetailScreenState extends State<ShlokaDetailScreen> {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              const Row(
+                              Row(
                                 children: [
-                                  Icon(
+                                  const Icon(
                                     Icons.music_note,
                                     color: Color(0xFF6366F1),
                                     size: 20,
                                   ),
-                                  SizedBox(width: 8),
-                                  Text(
+                                  const SizedBox(width: 8),
+                                  const Text(
                                     'Listen to this Shloka',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFF3E2723),
+                                      color: Color(0xFF0C1E4D),
                                     ),
                                   ),
+                                  const Spacer(),
+                                  if (_showPlayer)
+                                    IconButton(
+                                      icon: const Icon(Icons.close),
+                                      color: const Color(0xFF0C1E4D),
+                                      onPressed: _togglePlayer,
+                                    ),
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  onTap: _launchYouTube,
+                              if (_showPlayer && _youtubeController != null) ...[
+                                ClipRRect(
                                   borderRadius: BorderRadius.circular(16),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
-                                    decoration: BoxDecoration(
-                                      gradient: const LinearGradient(
-                                        colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
-                                      borderRadius: BorderRadius.circular(16),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: const Color(0xFF6366F1).withOpacity(0.3),
-                                          spreadRadius: 2,
-                                          blurRadius: 8,
-                                          offset: const Offset(0, 4),
-                                        ),
-                                      ],
-                                    ),
-                                    child: const Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.play_circle_filled,
-                                          color: Colors.white,
-                                          size: 32,
-                                        ),
-                                        SizedBox(width: 12),
-                                        Text(
-                                          'Listen on YouTube',
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.white,
-                                          ),
-                                        ),
-                                      ],
+                                  child: SizedBox(
+                                    height: 220,
+                                    child: YoutubePlayer(
+                                      controller: _youtubeController!,
+                                      aspectRatio: 16 / 9,
                                     ),
                                   ),
                                 ),
-                              ),
+                                const SizedBox(height: 12),
+                              ],
+                              if (!_showPlayer)
+                                Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap: _togglePlayer,
+                                    borderRadius: BorderRadius.circular(16),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 24),
+                                      decoration: BoxDecoration(
+                                        gradient: const LinearGradient(
+                                          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
+                                        borderRadius: BorderRadius.circular(16),
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: const Color(0xFF6366F1).withOpacity(0.3),
+                                            spreadRadius: 2,
+                                            blurRadius: 8,
+                                            offset: const Offset(0, 4),
+                                          ),
+                                        ],
+                                      ),
+                                      child: const Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.play_circle_filled,
+                                            color: Colors.white,
+                                            size: 32,
+                                          ),
+                                          SizedBox(width: 12),
+                                          Text(
+                                            'Play Audio',
+                                            style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.white,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
                             ],
                           ),
                           const SizedBox(height: 20),
@@ -308,149 +331,103 @@ class _ShlokaDetailScreenState extends State<ShlokaDetailScreen> {
               minHeight: isFlipped ? 200 : 70,
             ),
             decoration: BoxDecoration(
-              color: const Color(0xFFE8DCC4), // Aged palm leaf beige
-              borderRadius: BorderRadius.circular(8),
+              gradient: const LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF0C1E4D), // Very Dark Blue
+                  Color(0xFF1E3A8A), // Blue-900
+                  Color(0xFF1E40AF), // Blue-800
+                ],
+              ),
               border: Border.all(
-                color: const Color(0xFFB8945F),
+                color: const Color(0xFF0A1128),
                 width: 2,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.brown.withOpacity(0.3),
-                  spreadRadius: 2,
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
+                  color: Colors.black.withOpacity(0.3),
+                  spreadRadius: 1,
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
-            child: Stack(
-              children: [
-                // Horizontal texture lines (palm leaf ribs)
-                Positioned.fill(
-                  child: Column(
-                    children: List.generate(
-                      isFlipped ? 15 : 5,
-                      (i) => Expanded(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom: BorderSide(
-                                color: const Color(0xFFD4C4A8).withOpacity(0.3),
-                                width: 0.5,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                // Aging spots
-                if (!isFlipped) ...[
-                  Positioned(
-                    top: 8,
-                    left: 15,
-                    child: Container(
-                      width: 20,
-                      height: 20,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFFD4C4A8).withOpacity(0.4),
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    bottom: 10,
-                    right: 20,
-                    child: Container(
-                      width: 30,
-                      height: 18,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: const Color(0xFFCDB895).withOpacity(0.3),
-                      ),
-                    ),
-                  ),
-                ],
-                // Main content
-                Material(
-                  color: Colors.transparent,
-                  child: InkWell(
-                    borderRadius: BorderRadius.circular(8),
-                    onTap: () => _toggleCard(type),
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: isUnder
-                          ? Transform(
-                              alignment: Alignment.center,
-                              transform: Matrix4.identity()..rotateX(3.14159),
-                              child: SingleChildScrollView(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: () => _toggleCard(type),
+                child: Padding(
+                  padding: const EdgeInsets.all(20),
+                  child: isUnder
+                      ? Transform(
+                          alignment: Alignment.center,
+                          transform: Matrix4.identity()..rotateX(3.14159),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                       children: [
-                                        Row(
-                                          children: [
-                                            Icon(icon, color: const Color(0xFF3E2723), size: 20),
-                                            const SizedBox(width: 8),
-                                            Text(
-                                              label,
-                                              style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                color: Color(0xFF3E2723),
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                        const Icon(
-                                          Icons.close,
-                                          color: Color(0xFF5D4037),
-                                          size: 20,
+                                        Icon(icon, color: Colors.white, size: 20),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          label,
+                                          style: const TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.white,
+                                          ),
                                         ),
                                       ],
                                     ),
-                                    const SizedBox(height: 16),
-                                    Text(
-                                      _formatContent(type),
-                                      style: TextStyle(
-                                        fontSize: type == ContentType.devanagari ? 18 : 14,
-                                        height: shouldCenter ? 2.0 : 1.6,
-                                        color: const Color(0xFF3E2723),
-                                      ),
-                                      textAlign: shouldCenter ? TextAlign.center : TextAlign.start,
+                                    const Icon(
+                                      Icons.close,
+                                      color: Colors.white70,
+                                      size: 20,
                                     ),
                                   ],
                                 ),
-                              ),
-                            )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(icon, color: const Color(0xFF3E2723), size: 24),
-                                const SizedBox(width: 12),
+                                const SizedBox(height: 16),
                                 Text(
-                                  label,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF3E2723),
+                                  _formatContent(type),
+                                  style: TextStyle(
+                                    fontSize: type == ContentType.devanagari ? 18 : 14,
+                                    height: shouldCenter ? 2.0 : 1.6,
+                                    color: Colors.white,
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                const Icon(
-                                  Icons.arrow_drop_down,
-                                  color: Color(0xFF5D4037),
-                                  size: 24,
+                                  textAlign: shouldCenter ? TextAlign.center : TextAlign.start,
                                 ),
                               ],
                             ),
-                    ),
-                  ),
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(icon, color: Colors.white, size: 24),
+                            const SizedBox(width: 12),
+                            Text(
+                              label,
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            const Icon(
+                              Icons.arrow_drop_down,
+                              color: Colors.white70,
+                              size: 24,
+                            ),
+                          ],
+                        ),
                 ),
-              ],
+              ),
             ),
           ),
         );

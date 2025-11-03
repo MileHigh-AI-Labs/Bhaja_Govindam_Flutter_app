@@ -14,8 +14,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    - Features large Om symbol watermark in center
    - Displays featured card with "BHAJA GOVINDAM SHLOKAS" title and "Start Reading" button
    - Includes informational "About" section describing Bhaja Govindam
-   - Top bar with menu, notifications, and search icons (currently non-functional)
-   - Profile badge showing "Seeker" greeting
+   - **Top bar**: Menu (opens drawer), notifications (shows update count), search (navigates to search screen)
+   - Profile badge showing time-based greeting ("Good Morning", "Good Afternoon", etc.)
+   - **Drawer menu** with navigation to: Spiritual Quotes, Privacy Policy, social media links (LinkedIn, Instagram), website, share app
+   - **Social features**: Share app functionality, website launch (https://www.shikshakdp.com)
    - Navigation via button press to main shloka list screen
 
 2. **Shloka List Screen** (`lib/main.dart` - `BhajaGovindamHomePage`):
@@ -39,6 +41,26 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
    - Background: Gold to fire orange gradient (#FFD700 → #FFA500 → #FF6347)
    - Back button returns to shloka list
 
+4. **Search Screen** (`lib/search_screen.dart`):
+   - Full-text search across all shloka content (Devanagari, transliteration, word meanings, commentary)
+   - Real-time search as user types
+   - Search results show shloka number, label, and matched content snippets
+   - Highlights matching text within results
+   - Navigation to detail screen from search results
+   - Uses same gradient colors as main shloka cards for visual consistency
+
+5. **Spiritual Quotes Screen** (`lib/spiritual_quotes_screen.dart`):
+   - Collection of spiritual quotes from various traditions (Buddha, Rumi, Bhagavad Gita, etc.)
+   - Random card-based layout with unique colors for each quote card
+   - Share functionality for individual quotes
+   - Animated card appearance with staggered delays
+   - Back button returns to home screen
+
+6. **Privacy Policy Screen** (`lib/privacy_policy_screen.dart`):
+   - Displays app privacy policy and data handling information
+   - Scrollable content with formatted sections
+   - Standard policy screen accessible from drawer menu
+
 ### State Management Pattern
 - **Root App** (`MyApp` - StatelessWidget): Simple app entry point with theme configuration
 - **Local State**: Uses `StatefulWidget` with `setState()` for screen-level state in detail screen
@@ -51,8 +73,24 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   - Optional field: `audioUrl` (YouTube video ID for audio playback)
 - **Data Source**: JSON asset loaded via `rootBundle.loadString()`
 - **Parsing**: Direct JSON deserialization using `Shloka.fromJson()`
-- **No persistence**: Data exists only in memory during runtime
-- **Meaningful Labels**: Each shloka has a meaningful label (e.g., "Worship Govinda", "True Contentment") defined in `BhajaGovindamHomePage.shlokaLabels` array (main.dart:33-42) that summarizes the essence of that verse
+- **Persistence**: Uses `shared_preferences` for storing notification read status and synced audio URLs
+- **Meaningful Labels**: Each shloka has a meaningful label (e.g., "Worship Govinda", "True Contentment") defined in `BhajaGovindamHomePage.shlokaLabels` array (main.dart:40-48) that summarizes the essence of that verse
+
+### Services Layer
+- **NotificationService** (`lib/services/notification_service.dart`):
+  - Singleton service managing local notifications using `flutter_local_notifications`
+  - Checks for new content by scraping website (https://www.shikshakdp.com/content/bhaja-govindam/)
+  - Tracks unread notification count using `shared_preferences`
+  - Initialized in `main()` before app launch
+  - Platform support: Android and iOS notifications
+
+- **AudioSyncService** (`lib/services/audio_sync_service.dart`):
+  - Singleton service for syncing YouTube audio URLs from website
+  - Scrapes website HTML using `html` parser to find YouTube embeds for shlokas 20-33
+  - Extracts video IDs from various YouTube URL formats
+  - Stores synced audio URLs in `shared_preferences`
+  - Provides fallback audio for shlokas missing local audio data
+  - Called from home screen when user checks for updates
 
 ### UI/UX Design System
 
@@ -95,6 +133,26 @@ Global Gradient: Indigo-500 (#6366F1) → Violet-500 (#8B5CF6) → Violet-600 (#
 - Card flips: 600ms with `Curves.easeInOut`
 - 3D transformations using `Matrix4.rotateX()` with perspective via `setEntry(3, 2, 0.001)`
 
+## Initialization Requirements
+
+The app requires specific initialization steps in `main()`:
+
+```dart
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize notification service BEFORE runApp()
+  await NotificationService().initialize();
+
+  runApp(const MyApp());
+}
+```
+
+**Critical Notes**:
+- `WidgetsFlutterBinding.ensureInitialized()` is required for async operations in `main()`
+- NotificationService must be initialized before app launch to register notification channels
+- Failure to initialize notifications will cause crashes on first notification attempt
+
 ## Common Development Commands
 
 ```bash
@@ -129,18 +187,29 @@ flutter doctor                           # Verify Flutter installation
 
 ```
 lib/
-├── main.dart                      # App entry, shloka list screen
-├── home_screen.dart               # Landing/intro screen
-├── shloka_detail_screen.dart      # Detail view with flip cards
-└── model/
-    └── shloka_model.dart          # Data model with JSON parsing
+├── main.dart                       # App entry, shloka list screen with custom patterns
+├── home_screen.dart                # Landing screen with drawer, notifications, search
+├── shloka_detail_screen.dart       # Detail view with flip cards and YouTube player
+├── search_screen.dart              # Full-text search across all shlokas
+├── spiritual_quotes_screen.dart    # Spiritual quotes collection
+├── privacy_policy_screen.dart      # Privacy policy information
+├── model/
+│   └── shloka_model.dart          # Data model with JSON parsing
+└── services/
+    ├── notification_service.dart   # Local notifications and content updates
+    └── audio_sync_service.dart     # YouTube audio URL syncing from website
 
 assets/
-├── bhaja_govindam.json            # 33 shlokas data
-└── shankaracharya.png             # Image asset (referenced but not used)
+├── bhaja_govindam.json             # 33 shlokas data with audio URLs
+├── shankaracharya.png              # Historical image asset
+├── sdplogo-removebg-preview.png    # App logo
+├── Om_background.png               # Om symbol background
+├── Linkedin logo.png               # LinkedIn social media icon
+├── instagram logo.png              # Instagram social media icon
+└── Mile high labs logo.png         # Developer company logo
 
 test/
-└── widget_test.dart               # Widget tests (needs updating)
+└── widget_test.dart                # Widget tests (needs updating)
 ```
 
 ## Data Format & Critical Constraints
@@ -173,13 +242,19 @@ The `assets/bhaja_govindam.json` file contains exactly 33 objects with this stru
 
 **Production**:
 - `flutter` (SDK)
-- `cupertino_icons: ^1.0.8`
-- `url_launcher: ^6.3.1` - URL launcher (legacy, kept for compatibility)
-- `youtube_player_iframe: ^5.2.0` - Cross-platform YouTube iframe player (works on web and mobile)
+- `cupertino_icons: ^1.0.8` - iOS-style icons
+- `url_launcher: ^6.3.1` - Launch URLs (website, social media)
+- `youtube_player_iframe: ^5.2.0` - Cross-platform YouTube iframe player
+- `google_fonts: ^6.1.0` - Custom fonts for enhanced typography
+- `http: ^1.2.0` - HTTP requests for website scraping
+- `flutter_local_notifications: ^18.0.1` - Local push notifications (Android/iOS)
+- `shared_preferences: ^2.3.3` - Persistent key-value storage
+- `html: ^0.15.4` - HTML parsing for web scraping
+- `share_plus: ^10.1.2` - Native share functionality
 
 **Dev**:
 - `flutter_test` (SDK)
-- `flutter_lints: ^5.0.0`
+- `flutter_lints: ^5.0.0` - Recommended linting rules
 
 **SDK Requirements**: Dart ^3.9.2
 
@@ -195,18 +270,25 @@ The `assets/bhaja_govindam.json` file contains exactly 33 objects with this stru
 ### YouTube Audio Integration
 - **Feature**: Embedded YouTube player on detail screen (appears when `audioUrl` field is present)
 - **Implementation**: Uses `youtube_player_iframe` package with `YoutubePlayerController`
-- **Platform Support**: Works on both web (Chrome, Edge) and mobile (Android, iOS)
+- **Platform Support**: Works on all platforms (Android, iOS, Web, Windows, macOS)
+- **iOS Configuration Required**:
+  - `io.flutter.embedded_views_preview` must be set to `true` in `ios/Runner/Info.plist`
+  - `NSAppTransportSecurity` settings configured for web content
+  - See Info.plist for complete configuration
 - **Behavior**:
   - Shows "Play Audio" button when player is hidden
   - Clicking button toggles embedded YouTube iframe player within the app
-  - Player stays within the app (no external redirect)
+  - Player stays within the app (no external redirect for embedded player)
   - Close button (X icon) appears when player is visible to hide it
   - Auto-play disabled by default (user must click play in the player)
+  - **Fallback Option**: "Open in YouTube App" button provided for users who prefer external app
+  - **Error Handling**: If embedded player fails, shows error message with external link option
 - **Video ID**: Uses `audioUrl` field from JSON (e.g., "PWa7Fv4nX6A")
 - **Player Configuration**:
   - Fixed height: 220px with 16:9 aspect ratio
   - Controls enabled (play, pause, volume, progress bar)
   - Fullscreen button enabled
+  - JavaScript enabled for iOS compatibility
   - Loop disabled, mute disabled
 - **Location**: Button and player appear at the top of content area before flip cards
 
@@ -232,6 +314,18 @@ The `assets/bhaja_govindam.json` file contains exactly 33 objects with this stru
 5. Add case to `_formatContent()` switch statement
 6. Add new flip card by calling `_buildFlipCard()` in the detail screen `Column`
 
+### Adding Search Functionality
+- Search is implemented in `SearchScreen` with real-time filtering
+- Searches across all fields: Devanagari, transliteration, word meanings, commentary
+- Results include context snippets showing where the match was found
+- To add new searchable fields: update `_performSearch()` method in `search_screen.dart`
+
+### Working with Notifications
+- Notifications require initialization in `main()` before `runApp()`
+- Platform-specific setup may be required (AndroidManifest.xml for Android, Info.plist for iOS)
+- Check notification permissions on first launch
+- NotificationService maintains singleton pattern - access via `NotificationService()`
+
 ### Modifying Animations
 - Flip card duration: `duration` in `TweenAnimationBuilder` in `shloka_detail_screen.dart`
 - Animation curves: Modify `Curves` parameter in `TweenAnimationBuilder`
@@ -254,15 +348,66 @@ Configured for:
 - macOS
 - Linux
 
+### iOS-Specific Configuration
+
+For YouTube player and web content to work on iOS, the following must be configured in `ios/Runner/Info.plist`:
+
+```xml
+<key>io.flutter.embedded_views_preview</key>
+<true/>
+<key>NSAppTransportSecurity</key>
+<dict>
+    <key>NSAllowsArbitraryLoads</key>
+    <true/>
+    <key>NSAllowsArbitraryLoadsInWebContent</key>
+    <true/>
+</dict>
+```
+
+**Why This Is Needed**:
+- `io.flutter.embedded_views_preview`: Enables platform views (required for WebView/YouTube player)
+- `NSAppTransportSecurity`: Allows HTTPS connections to YouTube and external images
+- Without these settings, YouTube player will not display on iOS devices
+
+### Responsive Design
+
+The app uses `LayoutBuilder` for responsive layouts that adapt to different screen sizes:
+- **Small screens** (<360px width): Reduced font sizes, smaller images, compact padding
+- **Regular screens** (≥360px width): Normal sizing and spacing
+- All text elements use `maxLines` and `TextOverflow.ellipsis` to prevent overflow
+- Featured card on home screen dynamically adjusts image size, fonts, and padding based on available width
+
 ## Known Issues & Quirks
 
 1. **JSON Leading Space**: The `" Transliteration"` key has a leading space - intentional but unusual
 2. **Default Test**: `test/widget_test.dart` still contains counter app template - needs replacement
 3. **No Error Handling**: JSON parsing assumes perfect data - malformed JSON will crash the app
-4. **No Offline Indicator**: App is fully offline but doesn't communicate this to users
-5. **Unused Icons**: Home screen has menu, notifications, and search icons that are not yet functional
-6. **Unused Asset**: `shankaracharya.png` image asset is declared but not currently displayed in the app
-7. **Network Image**: Home screen featured card attempts to load background image from Unsplash but has fallback to transparent
+4. **Network Dependency**: App checks website for updates but doesn't gracefully handle network failures
+5. **Web Scraping Fragility**: AudioSyncService and NotificationService rely on website HTML structure - changes to website may break scraping
+6. **Hardcoded URLs**: Social media URLs and website links are hardcoded in `home_screen.dart`
+7. **Limited Audio Coverage**: Audio URLs primarily for shlokas 1-19 in JSON, shlokas 20-33 rely on web scraping
+8. **No Caching Strategy**: Web scraping results stored in shared_preferences but no TTL or invalidation logic
+
+## Troubleshooting
+
+### YouTube Player Not Working on iOS
+If the YouTube player doesn't load on iOS:
+1. Verify `ios/Runner/Info.plist` has the required keys (see iOS-Specific Configuration above)
+2. Clean and rebuild the iOS app: `flutter clean && flutter pub get && flutter run`
+3. Use the "Open in YouTube App" fallback button that appears below the player
+4. Check iOS device is running iOS 11 or later (required for WKWebView)
+
+### Layout Overflow Errors
+All overflow errors have been fixed with:
+- Responsive `LayoutBuilder` in featured card
+- `Flexible` widgets wrapping text elements
+- Dynamic font sizes based on screen width
+- `maxLines` and `TextOverflow.ellipsis` on all text
+
+If you encounter new overflow errors:
+- Check the screen width with `MediaQuery.of(context).size.width`
+- Wrap fixed-width elements in `Flexible` or `Expanded`
+- Use `LayoutBuilder` for responsive sizing
 
 ## Testing Strategy
 
@@ -272,16 +417,42 @@ Current test coverage is minimal. Recommended tests:
 - `Shloka.fromJson()` parsing (including space handling)
 - `loadShlokas()` async loading
 - Content formatting logic in `_formatContent()`
+- Search algorithm in `_performSearch()`
+- YouTube video ID extraction in AudioSyncService
+- Notification count tracking in NotificationService
 
 **Widget Tests**:
 - Home screen rendering and navigation
-- Shloka list rendering with correct count
-- Navigation between screens
+- Shloka list rendering with correct count (33 cards)
+- Navigation between screens (home → list → detail → search)
 - Flip card state management
 - YouTube player toggle functionality
-- YoutubePlayerController initialization and video loading
+- Search results display and filtering
+- Drawer menu items and navigation
+- Share functionality trigger
 
 **Integration Tests**:
 - End-to-end flow: home → list → detail → back navigation
 - Multiple card flips in detail screen
 - JSON loading error handling
+- Web scraping fallback when network unavailable
+- Notification badge updates after checking for content
+- Search → detail screen → back to search preserving state
+
+## External Integrations
+
+**Website Integration**:
+- Main website: https://www.shikshakdp.com
+- Content source: https://www.shikshakdp.com/content/bhaja-govindam/
+- Website is scraped for new content notifications and audio URL sync
+- HTML structure dependency: Looks for YouTube iframes, embeds, and links
+
+**Social Media Links** (in drawer):
+- LinkedIn: Hardcoded company profile URL
+- Instagram: Hardcoded company profile URL
+
+**YouTube Integration**:
+- Embedded player uses `youtube_player_iframe` package
+- Video IDs stored in JSON or synced from website
+- No YouTube API key required (uses iframe embed)
+- Platform support: Web, Android, iOS

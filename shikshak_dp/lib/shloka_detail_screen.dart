@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'dart:io' show Platform;
 import 'package:youtube_player_iframe/youtube_player_iframe.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'model/shloka_model.dart'; // Ensure this path is correct
 
 // Enum to manage which content is currently selected
@@ -23,21 +26,29 @@ class _ShlokaDetailScreenState extends State<ShlokaDetailScreen> {
   ContentType? _flippedCard;
   YoutubePlayerController? _youtubeController;
   bool _showPlayer = false;
+  bool _playerError = false;
 
   @override
   void initState() {
     super.initState();
     if (widget.shloka.audioUrl != null && widget.shloka.audioUrl!.isNotEmpty) {
-      _youtubeController = YoutubePlayerController.fromVideoId(
-        videoId: widget.shloka.audioUrl!,
-        autoPlay: false,
-        params: const YoutubePlayerParams(
-          showControls: true,
-          showFullscreenButton: true,
-          mute: false,
-          loop: false,
-        ),
-      );
+      try {
+        _youtubeController = YoutubePlayerController.fromVideoId(
+          videoId: widget.shloka.audioUrl!,
+          autoPlay: false,
+          params: const YoutubePlayerParams(
+            showControls: true,
+            showFullscreenButton: true,
+            mute: false,
+            loop: false,
+            enableJavaScript: true,
+            strictRelatedVideos: true,
+          ),
+        );
+      } catch (e) {
+        debugPrint('Error initializing YouTube player: $e');
+        _playerError = true;
+      }
     }
   }
 
@@ -51,6 +62,42 @@ class _ShlokaDetailScreenState extends State<ShlokaDetailScreen> {
     setState(() {
       _showPlayer = !_showPlayer;
     });
+  }
+
+  // Method to open YouTube in external app/browser
+  Future<void> _openYouTubeExternal() async {
+    if (widget.shloka.audioUrl == null || widget.shloka.audioUrl!.isEmpty) return;
+
+    final videoId = widget.shloka.audioUrl!;
+    final url = Uri.parse('https://www.youtube.com/watch?v=$videoId');
+
+    try {
+      if (await canLaunchUrl(url)) {
+        await launchUrl(
+          url,
+          mode: LaunchMode.externalApplication,
+        );
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Could not open YouTube'),
+              duration: Duration(seconds: 2),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      debugPrint('Error launching YouTube: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: ${e.toString()}'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
   void _toggleCard(ContentType type) {
@@ -200,7 +247,7 @@ class _ShlokaDetailScreenState extends State<ShlokaDetailScreen> {
                                 ],
                               ),
                               const SizedBox(height: 12),
-                              if (_showPlayer && _youtubeController != null) ...[
+                              if (_showPlayer && _youtubeController != null && !_playerError) ...[
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(16),
                                   child: SizedBox(
@@ -209,6 +256,54 @@ class _ShlokaDetailScreenState extends State<ShlokaDetailScreen> {
                                       controller: _youtubeController!,
                                       aspectRatio: 16 / 9,
                                     ),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                // Alternative: Open in YouTube App button
+                                TextButton.icon(
+                                  onPressed: _openYouTubeExternal,
+                                  icon: const Icon(Icons.open_in_new, size: 18),
+                                  label: const Text('Open in YouTube App'),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: const Color(0xFF6366F1),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                              ],
+                              // Show error message or external link if player failed
+                              if (_showPlayer && _playerError) ...[
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.orange.shade50,
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: Colors.orange.shade200),
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      const Row(
+                                        children: [
+                                          Icon(Icons.info_outline, color: Colors.orange),
+                                          SizedBox(width: 8),
+                                          Expanded(
+                                            child: Text(
+                                              'Embedded player unavailable. Open in YouTube app instead.',
+                                              style: TextStyle(color: Colors.black87),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 12),
+                                      ElevatedButton.icon(
+                                        onPressed: _openYouTubeExternal,
+                                        icon: const Icon(Icons.play_arrow),
+                                        label: const Text('Open in YouTube'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor: Colors.red,
+                                          foregroundColor: Colors.white,
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                                 const SizedBox(height: 12),

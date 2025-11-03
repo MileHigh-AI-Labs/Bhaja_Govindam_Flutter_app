@@ -188,32 +188,38 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     // App Title with Logo
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Image.asset(
-                          'assets/sdplogo-removebg-preview.png',
-                          height: 40,
-                          width: 40,
-                        ),
-                        const SizedBox(width: 8),
-                        Text(
-                          'Shikshak DP',
-                          style: GoogleFonts.cinzelDecorative(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                            letterSpacing: 1.5,
-                            shadows: [
-                              const Shadow(
-                                offset: Offset(0, 2),
-                                blurRadius: 4,
-                                color: Colors.black26,
-                              ),
-                            ],
+                    Flexible(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Image.asset(
+                            'assets/sdplogo-removebg-preview.png',
+                            height: 32,
+                            width: 32,
                           ),
-                        ),
-                      ],
+                          const SizedBox(width: 6),
+                          Flexible(
+                            child: Text(
+                              'Shikshak DP',
+                              style: GoogleFonts.cinzelDecorative(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                                letterSpacing: 1.0,
+                                shadows: [
+                                  const Shadow(
+                                    offset: Offset(0, 2),
+                                    blurRadius: 4,
+                                    color: Colors.black26,
+                                  ),
+                                ],
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                     // Right Icons
                     Row(
@@ -316,12 +322,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            const Text(
-                              'Seeker!',
-                              style: TextStyle(
-                                fontSize: 36,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                            Flexible(
+                              child: Text(
+                                'Seeker!',
+                                style: const TextStyle(
+                                  fontSize: 32,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
                             const Spacer(),
@@ -395,171 +404,190 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(height: 40),
 
                         // Featured Card
-                        Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
-                            gradient: const LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                Color(0xFF0C1E4D), // Very Dark Blue
-                                Color(0xFF1E3A8A), // Blue-900
-                                Color(0xFF1E40AF), // Blue-800
-                              ],
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 20,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: Stack(
-                              children: [
-                                // Background Pattern
-                                Positioned.fill(
-                                  child: Opacity(
-                                    opacity: 0.1,
-                                    child: Image.network(
-                                      'https://images.unsplash.com/photo-1604608672516-f1b9b1f9b8e9?w=800',
-                                      fit: BoxFit.cover,
-                                      errorBuilder: (context, error, stackTrace) =>
-                                          Container(color: Colors.transparent),
-                                    ),
-                                  ),
+                        LayoutBuilder(
+                          builder: (context, constraints) {
+                            final isSmallScreen = constraints.maxWidth < 360;
+                            final imageWidth = isSmallScreen ? 100.0 : 120.0;
+                            final imageHeight = isSmallScreen ? 150.0 : 180.0;
+                            final cardPadding = isSmallScreen ? 16.0 : 20.0;
+                            final titleFontSize = isSmallScreen ? 20.0 : 24.0;
+                            final subtitleFontSize = isSmallScreen ? 18.0 : 22.0;
+
+                            return Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(20),
+                                gradient: const LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Color(0xFF0C1E4D), // Very Dark Blue
+                                    Color(0xFF1E3A8A), // Blue-900
+                                    Color(0xFF1E40AF), // Blue-800
+                                  ],
                                 ),
-                                // Content
-                                Padding(
-                                  padding: const EdgeInsets.all(30.0),
-                                  child: Row(
-                                    children: [
-                                      // Shankaracharya Image on the left
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Image.asset(
-                                          'assets/shankaracharya.png',
-                                          height: 200,
-                                          width: 150,
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.3),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: Stack(
+                                  children: [
+                                    // Background Pattern
+                                    Positioned.fill(
+                                      child: Opacity(
+                                        opacity: 0.1,
+                                        child: Image.network(
+                                          'https://images.unsplash.com/photo-1604608672516-f1b9b1f9b8e9?w=800',
                                           fit: BoxFit.cover,
+                                          errorBuilder: (context, error, stackTrace) =>
+                                              Container(color: Colors.transparent),
                                         ),
                                       ),
-                                      const SizedBox(width: 20),
-                                      // Text content on the right
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            // Main Title
-                                            const Text(
-                                              'BHAJA GOVINDAM',
-                                              style: TextStyle(
-                                                fontSize: 32,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white,
-                                                letterSpacing: 1.5,
-                                              ),
+                                    ),
+                                    // Content
+                                    Padding(
+                                      padding: EdgeInsets.all(cardPadding),
+                                      child: Row(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          // Shankaracharya Image on the left
+                                          ClipRRect(
+                                            borderRadius: BorderRadius.circular(12),
+                                            child: Image.asset(
+                                              'assets/shankaracharya.png',
+                                              height: imageHeight,
+                                              width: imageWidth,
+                                              fit: BoxFit.cover,
                                             ),
-                                            const SizedBox(height: 8),
-                                            const Text(
-                                              'SHLOKAS',
-                                              style: TextStyle(
-                                                fontSize: 28,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.white,
-                                                letterSpacing: 1.5,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 20),
-                                            // Subtitle
-                                            const Text(
-                                              'The Ultimate Verses\nTo Master Life by\nAdi Shankaracharya',
-                                              style: TextStyle(
-                                                fontSize: 18,
-                                                color: Colors.white,
-                                                height: 1.5,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 30),
-                                            // Info Text
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(
-                                                horizontal: 16,
-                                                vertical: 8,
-                                              ),
-                                              decoration: BoxDecoration(
-                                                color: Colors.white.withOpacity(0.2),
-                                                borderRadius: BorderRadius.circular(8),
-                                              ),
-                                              child: const Text(
-                                                'COMPLETE COLLECTION',
-                                                style: TextStyle(
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.white,
-                                                  letterSpacing: 1.2,
-                                                ),
-                                              ),
-                                            ),
-                                            const SizedBox(height: 10),
-                                            const Text(
-                                              '33 Sacred Verses Available Now',
-                                              style: TextStyle(
-                                                fontSize: 16,
-                                                fontStyle: FontStyle.italic,
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 30),
-                                            // Action Button
-                                            ElevatedButton(
-                                              onPressed: () {
-                                                Navigator.push(
-                                                  context,
-                                                  MaterialPageRoute(
-                                                    builder: (context) =>
-                                                        const BhajaGovindamHomePage(),
+                                          ),
+                                          SizedBox(width: isSmallScreen ? 12 : 16),
+                                          // Text content on the right
+                                          Expanded(
+                                            child: Column(
+                                              crossAxisAlignment: CrossAxisAlignment.start,
+                                              children: [
+                                                // Main Title
+                                                Text(
+                                                  'BHAJA GOVINDAM',
+                                                  style: TextStyle(
+                                                    fontSize: titleFontSize,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white,
+                                                    letterSpacing: 1.2,
                                                   ),
-                                                );
-                                              },
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: Colors.white,
-                                                foregroundColor: const Color(0xFF6B46C1),
-                                                padding: const EdgeInsets.symmetric(
-                                                  horizontal: 30,
-                                                  vertical: 16,
+                                                  maxLines: 2,
+                                                  overflow: TextOverflow.ellipsis,
                                                 ),
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius: BorderRadius.circular(30),
+                                                const SizedBox(height: 6),
+                                                Text(
+                                                  'SHLOKAS',
+                                                  style: TextStyle(
+                                                    fontSize: subtitleFontSize,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white,
+                                                    letterSpacing: 1.2,
+                                                  ),
                                                 ),
-                                                elevation: 5,
-                                              ),
-                                              child: Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: const [
-                                                  Icon(Icons.play_arrow_rounded, size: 28),
-                                                  SizedBox(width: 8),
-                                                  Text(
-                                                    'Start Reading',
+                                                const SizedBox(height: 16),
+                                                // Subtitle
+                                                Text(
+                                                  'The Ultimate Verses\nTo Master Life by\nAdi Shankaracharya',
+                                                  style: TextStyle(
+                                                    fontSize: isSmallScreen ? 12 : 14,
+                                                    color: Colors.white,
+                                                    height: 1.4,
+                                                  ),
+                                                  maxLines: 3,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                                const SizedBox(height: 20),
+                                                // Info Text
+                                                Container(
+                                                  padding: EdgeInsets.symmetric(
+                                                    horizontal: isSmallScreen ? 8 : 12,
+                                                    vertical: 6,
+                                                  ),
+                                                  decoration: BoxDecoration(
+                                                    color: Colors.white.withOpacity(0.2),
+                                                    borderRadius: BorderRadius.circular(8),
+                                                  ),
+                                                  child: Text(
+                                                    'COMPLETE COLLECTION',
                                                     style: TextStyle(
-                                                      fontSize: 18,
+                                                      fontSize: isSmallScreen ? 10 : 12,
                                                       fontWeight: FontWeight.bold,
+                                                      color: Colors.white,
+                                                      letterSpacing: 1.0,
                                                     ),
                                                   ),
-                                                ],
-                                              ),
+                                                ),
+                                                const SizedBox(height: 8),
+                                                Text(
+                                                  '33 Sacred Verses Available Now',
+                                                  style: TextStyle(
+                                                    fontSize: isSmallScreen ? 11 : 13,
+                                                    fontStyle: FontStyle.italic,
+                                                    color: Colors.white,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                ),
+                                                const SizedBox(height: 20),
+                                                // Action Button
+                                                ElevatedButton(
+                                                  onPressed: () {
+                                                    Navigator.push(
+                                                      context,
+                                                      MaterialPageRoute(
+                                                        builder: (context) =>
+                                                            const BhajaGovindamHomePage(),
+                                                      ),
+                                                    );
+                                                  },
+                                                  style: ElevatedButton.styleFrom(
+                                                    backgroundColor: Colors.white,
+                                                    foregroundColor: const Color(0xFF6B46C1),
+                                                    padding: EdgeInsets.symmetric(
+                                                      horizontal: isSmallScreen ? 16 : 20,
+                                                      vertical: 12,
+                                                    ),
+                                                    shape: RoundedRectangleBorder(
+                                                      borderRadius: BorderRadius.circular(30),
+                                                    ),
+                                                    elevation: 5,
+                                                  ),
+                                                  child: Row(
+                                                    mainAxisSize: MainAxisSize.min,
+                                                    children: [
+                                                      Icon(Icons.play_arrow_rounded,
+                                                        size: isSmallScreen ? 20 : 24),
+                                                      const SizedBox(width: 6),
+                                                      Text(
+                                                        'Start Reading',
+                                                        style: TextStyle(
+                                                          fontSize: isSmallScreen ? 14 : 16,
+                                                          fontWeight: FontWeight.bold,
+                                                        ),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                              ],
                                             ),
-                                          ],
-                                        ),
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
+                              ),
+                            );
+                          },
                         ),
 
                         const SizedBox(height: 40),
@@ -611,7 +639,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildDrawer() {
     return Drawer(
       backgroundColor: const Color(0xFF1A0B2E),
-      child: Column(
+      child: ListView(
+        padding: EdgeInsets.zero,
         children: [
           // Simple drawer header without logo/text
           const SizedBox(height: 60),

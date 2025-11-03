@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:math';
 import 'package:share_plus/share_plus.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class SpiritualQuotesScreen extends StatelessWidget {
   const SpiritualQuotesScreen({super.key});
@@ -165,67 +166,81 @@ class SpiritualQuotesScreen extends StatelessWidget {
                 ),
                 // Quote content
                 Expanded(
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 40.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Opening quote mark
-                          const Icon(
-                            Icons.format_quote,
-                            size: 80,
-                            color: Colors.white38,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final isSmallScreen = constraints.maxWidth < 600;
+                      final quoteFontSize = isSmallScreen ? 22.0 : 26.0;
+                      final authorFontSize = isSmallScreen ? 18.0 : 20.0;
+                      final iconSize = isSmallScreen ? 60.0 : 80.0;
+                      final horizontalPadding = isSmallScreen ? 24.0 : 40.0;
+
+                      return Center(
+                        child: SingleChildScrollView(
+                          padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              // Opening quote mark
+                              Icon(
+                                Icons.format_quote,
+                                size: iconSize,
+                                color: Colors.white38,
+                              ),
+                              SizedBox(height: isSmallScreen ? 24 : 40),
+                              // Quote text with beautiful styling
+                              Text(
+                                '"${currentQuote['quote']!}"',
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.lora(
+                                  fontSize: quoteFontSize,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.white,
+                                  height: 1.8,
+                                  letterSpacing: 0.8,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                                maxLines: 10,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              SizedBox(height: isSmallScreen ? 30 : 50),
+                              // Divider line
+                              Container(
+                                width: 60,
+                                height: 2,
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.5),
+                                  borderRadius: BorderRadius.circular(1),
+                                ),
+                              ),
+                              SizedBox(height: isSmallScreen ? 20 : 30),
+                              // Author
+                              Text(
+                                '— ${currentQuote['author']}',
+                                style: GoogleFonts.raleway(
+                                  fontSize: authorFontSize,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                  letterSpacing: 1.2,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(height: isSmallScreen ? 40 : 80),
+                              // Closing quote mark
+                              Transform.rotate(
+                                angle: pi,
+                                child: Icon(
+                                  Icons.format_quote,
+                                  size: iconSize,
+                                  color: Colors.white38,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 40),
-                          // Quote text with beautiful styling
-                          Text(
-                            '"${currentQuote['quote']!}"',
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 26,
-                              fontWeight: FontWeight.w400,
-                              color: Colors.white,
-                              height: 1.8,
-                              letterSpacing: 0.8,
-                              fontFamily: 'serif',
-                              fontStyle: FontStyle.italic,
-                            ),
-                          ),
-                          const SizedBox(height: 50),
-                          // Divider line
-                          Container(
-                            width: 60,
-                            height: 2,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.5),
-                              borderRadius: BorderRadius.circular(1),
-                            ),
-                          ),
-                          const SizedBox(height: 30),
-                          // Author
-                          Text(
-                            '— ${currentQuote['author']}',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                              letterSpacing: 1.2,
-                            ),
-                          ),
-                          const SizedBox(height: 80),
-                          // Closing quote mark
-                          Transform.rotate(
-                            angle: pi,
-                            child: const Icon(
-                              Icons.format_quote,
-                              size: 80,
-                              color: Colors.white38,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 // Bottom section with logo and share button

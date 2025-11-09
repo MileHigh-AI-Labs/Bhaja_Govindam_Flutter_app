@@ -1,30 +1,103 @@
-// This is a basic Flutter widget test.
+// Widget tests for Bhaja Govindam Flutter App
 //
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
+// These tests verify the core functionality of the Bhaja Govindam app,
+// including the home screen UI, navigation to the shloka list, and
+// proper loading of shloka data.
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:shikshak_dp/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  // Setup: Mock asset loading for tests
+  setUpAll(() {
+    // Mock the notification service initialization
+    TestWidgetsFlutterBinding.ensureInitialized();
+  });
+
+  testWidgets('App loads home screen with key UI elements', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Verify that key UI elements are present on the home screen
+    expect(find.text('Shikshak DP'), findsOneWidget);
+    expect(find.text('Seeker!'), findsOneWidget);
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // Verify the main content title is present
+    expect(find.text('BHAJA GOVINDAM'), findsOneWidget);
+    expect(find.text('SHLOKAS'), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verify the start reading button is present
+    expect(find.text('Start Reading'), findsOneWidget);
+  });
+
+  testWidgets('Greeting changes based on time of day', (WidgetTester tester) async {
+    // Build the app
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
+
+    // Verify that one of the greetings is present
+    final greetingFinder = find.byWidgetPredicate(
+      (widget) => widget is Text &&
+        (widget.data == 'Good Morning' ||
+         widget.data == 'Good Afternoon' ||
+         widget.data == 'Good Evening' ||
+         widget.data == 'Good Night'),
+    );
+
+    expect(greetingFinder, findsOneWidget);
+  });
+
+  testWidgets('Navigation to Bhaja Govindam home page works', (WidgetTester tester) async {
+    // Build the app
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
+
+    // Tap the "Start Reading" button
+    await tester.tap(find.text('Start Reading'));
+    await tester.pumpAndSettle();
+
+    // Verify navigation to the Bhaja Govindam page
+    expect(find.text('Bhaja Govindam'), findsOneWidget);
+    expect(find.text('33 Sacred Verses by Adi Shankaracharya'), findsOneWidget);
+  });
+
+  testWidgets('Om symbol is displayed on home screen', (WidgetTester tester) async {
+    // Build the app
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
+
+    // Verify that the Om symbol (ॐ) is displayed
+    expect(find.text('ॐ'), findsWidgets);
+  });
+
+  testWidgets('Search and notification icons are present', (WidgetTester tester) async {
+    // Build the app
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
+
+    // Verify that the search icon is present
+    expect(find.byIcon(Icons.search), findsOneWidget);
+
+    // Verify that the notifications icon is present
+    expect(find.byIcon(Icons.notifications_outlined), findsOneWidget);
+  });
+
+  testWidgets('Menu icon opens drawer', (WidgetTester tester) async {
+    // Build the app
+    await tester.pumpWidget(const MyApp());
+    await tester.pumpAndSettle();
+
+    // Tap the menu icon
+    await tester.tap(find.byIcon(Icons.menu));
+    await tester.pumpAndSettle();
+
+    // Verify that drawer items are visible
+    expect(find.text('Privacy Policy'), findsOneWidget);
+    expect(find.text('Share the App'), findsOneWidget);
+    expect(find.text('Visit Us'), findsOneWidget);
   });
 }

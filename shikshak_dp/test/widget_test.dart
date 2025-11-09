@@ -11,20 +11,39 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shikshak_dp/main.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
+  testWidgets('Bhaja Govindam app smoke test', (WidgetTester tester) async {
     // Build our app and trigger a frame.
     await tester.pumpWidget(const MyApp());
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Allow async operations to complete (for services initialization)
+    await tester.pumpAndSettle();
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    // Verify that the app title is displayed
+    expect(find.text('Shikshak DP'), findsOneWidget);
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verify that the greeting text is displayed
+    expect(find.text('Seeker!'), findsOneWidget);
+
+    // Verify that the Start Reading button is displayed
+    expect(find.text('Start Reading'), findsOneWidget);
+  });
+
+  testWidgets('Navigation to Bhaja Govindam list works', (WidgetTester tester) async {
+    // Build our app and trigger a frame.
+    await tester.pumpWidget(const MyApp());
+
+    // Allow async operations to complete
+    await tester.pumpAndSettle();
+
+    // Find and tap the "Start Reading" button
+    final startReadingButton = find.text('Start Reading');
+    expect(startReadingButton, findsOneWidget);
+
+    await tester.tap(startReadingButton);
+    await tester.pumpAndSettle();
+
+    // Verify that we navigated to the Bhaja Govindam page
+    expect(find.text('Bhaja Govindam'), findsOneWidget);
+    expect(find.text('33 Sacred Verses by Adi Shankaracharya'), findsOneWidget);
   });
 }
